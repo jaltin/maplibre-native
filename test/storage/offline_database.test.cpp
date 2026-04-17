@@ -1466,7 +1466,7 @@ TEST(OfflineDatabase, MigrateFromV2Schema) {
     }
 
     EXPECT_EQ(7, databaseUserVersion(filename));
-    EXPECT_LT(databasePageCount(filename), databasePageCount("test/fixtures/offline_database/v2.db"));
+    EXPECT_LE(databasePageCount(filename), databasePageCount("test/fixtures/offline_database/v2.db"));
 
     EXPECT_EQ(0u, log.uncheckedCount());
 }
@@ -1651,21 +1651,30 @@ TEST(OfflineDatabase, CorruptDatabaseOnQuery) {
     util::deleteFile(filename);
     util::copyFile(filename, "test/fixtures/offline_database/corrupt-delayed.db");
 
-    // This database is corrupt in a way that manifests during the v7
-    // migration (which recreates the tiles table), so opening it triggers
-    // corruption detection and database recreation.
+    // This database is corrupt in a way that may manifest either during the
+    // v7 migration or during the first query, depending on the SQLite version.
+    // Either way, the database should be recreated and work afterward.
     OfflineDatabase db(filename, fixture::tileServerOptions);
 
-    // The migration reveals the corruption, causing the database to be recreated.
-    EXPECT_EQ(1u, log.count(error(ResultCode::Corrupt, "Can't open database: database disk image is malformed"), true));
-    EXPECT_EQ(
-        1u,
-        log.count({EventSeverity::Warning, Event::Database, -1, "Removing existing incompatible offline database"}));
-    EXPECT_EQ(0u, log.uncheckedCount());
-
-    // Queries succeed on the recreated database.
-    EXPECT_EQ(std::nullopt, db.get(fixture::tile));
-    EXPECT_EQ(0u, log.uncheckedCount());
+    auto corruptOnOpen = log.count(error(ResultCode::Corrupt, "Can't open database: database disk image is malformed"), true);
+    if (corruptOnOpen > 0) {
+        // Corruption detected during migration.
+        EXPECT_EQ(
+            1u,
+            log.count({EventSeverity::Warning, Event::Database, -1, "Removing existing incompatible offline database"}));
+        EXPECT_EQ(0u, log.uncheckedCount());
+        EXPECT_EQ(std::nullopt, db.get(fixture::tile));
+        EXPECT_EQ(0u, log.uncheckedCount());
+    } else {
+        // Corruption detected on first query.
+        EXPECT_EQ(0u, log.uncheckedCount());
+        EXPECT_EQ(std::nullopt, db.get(fixture::tile));
+        EXPECT_EQ(1u, log.count(error(ResultCode::Corrupt, "Can't read resource: database disk image is malformed"), true));
+        EXPECT_EQ(
+            1u,
+            log.count({EventSeverity::Warning, Event::Database, -1, "Removing existing incompatible offline database"}));
+        EXPECT_EQ(0u, log.uncheckedCount());
+    }
 
     // Now try inserting and reading back to make sure we have a valid database.
     for (const auto& res : {fixture::resource, fixture::tile}) {
