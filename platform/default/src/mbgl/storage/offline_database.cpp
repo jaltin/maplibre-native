@@ -228,29 +228,31 @@ void OfflineDatabase::migrateToVersion7() {
     // temporarily disabled to allow dropping the referenced table.
     db->exec("PRAGMA foreign_keys = OFF");
     mapbox::sqlite::Transaction transaction(*db);
-    db->exec("CREATE TABLE tiles_new ("
-             "  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
-             "  url_template TEXT NOT NULL,"
-             "  pixel_ratio INTEGER NOT NULL,"
-             "  z INTEGER NOT NULL,"
-             "  x INTEGER NOT NULL,"
-             "  y INTEGER NOT NULL,"
-             "  expires INTEGER,"
-             "  modified INTEGER,"
-             "  etag TEXT,"
-             "  data BLOB,"
-             "  compressed INTEGER NOT NULL DEFAULT 0,"
-             "  accessed INTEGER NOT NULL,"
-             "  must_revalidate INTEGER NOT NULL DEFAULT 0,"
-             "  encoding INTEGER NOT NULL DEFAULT 0,"
-             "  UNIQUE (url_template, pixel_ratio, z, x, y, encoding)"
-             ")");
-    db->exec("INSERT INTO tiles_new (id, url_template, pixel_ratio, z, x, y,"
-             "  expires, modified, etag, data, compressed, accessed,"
-             "  must_revalidate, encoding)"
-             "  SELECT id, url_template, pixel_ratio, z, x, y,"
-             "  expires, modified, etag, data, compressed, accessed,"
-             "  must_revalidate, 0 FROM tiles");
+    db->exec(
+        "CREATE TABLE tiles_new ("
+        "  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
+        "  url_template TEXT NOT NULL,"
+        "  pixel_ratio INTEGER NOT NULL,"
+        "  z INTEGER NOT NULL,"
+        "  x INTEGER NOT NULL,"
+        "  y INTEGER NOT NULL,"
+        "  expires INTEGER,"
+        "  modified INTEGER,"
+        "  etag TEXT,"
+        "  data BLOB,"
+        "  compressed INTEGER NOT NULL DEFAULT 0,"
+        "  accessed INTEGER NOT NULL,"
+        "  must_revalidate INTEGER NOT NULL DEFAULT 0,"
+        "  encoding INTEGER NOT NULL DEFAULT 0,"
+        "  UNIQUE (url_template, pixel_ratio, z, x, y, encoding)"
+        ")");
+    db->exec(
+        "INSERT INTO tiles_new (id, url_template, pixel_ratio, z, x, y,"
+        "  expires, modified, etag, data, compressed, accessed,"
+        "  must_revalidate, encoding)"
+        "  SELECT id, url_template, pixel_ratio, z, x, y,"
+        "  expires, modified, etag, data, compressed, accessed,"
+        "  must_revalidate, 0 FROM tiles");
     db->exec("DROP TABLE tiles");
     db->exec("ALTER TABLE tiles_new RENAME TO tiles");
     db->exec("CREATE INDEX tiles_accessed ON tiles (accessed)");
@@ -959,7 +961,9 @@ expected<OfflineRegions, std::exception_ptr> OfflineDatabase::mergeDatabase(cons
         if (sideUserVersion < mainUserVersion) {
             db->exec("DETACH DATABASE side");
             statements.clear();
-            { OfflineDatabase sideDB(sideDatabasePath, tileServerOptions); }
+            {
+                OfflineDatabase sideDB(sideDatabasePath, tileServerOptions);
+            }
             mapbox::sqlite::Query reattach{getStatement("ATTACH DATABASE ?1 AS side")};
             reattach.bind(1, sideDatabasePath);
             reattach.run();
