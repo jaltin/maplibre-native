@@ -1,4 +1,5 @@
 #include <mbgl/storage/resource.hpp>
+#include <mbgl/util/constants.hpp>
 
 #include <gtest/gtest.h>
 
@@ -30,7 +31,8 @@ TEST(Resource, Tile) {
     EXPECT_EQ(3, rasterTile.tileData->z);
 
     Resource vectorTile = Resource::tile(
-        "http://example.com/{prefix}/{z}/{x}/{y}.mvt", 2.0, 1, 2, 3, Tileset::Scheme::XYZ);
+        "http://example.com/{prefix}/{z}/{x}/{y}.mvt", 2.0, 1, 2, 3, Tileset::Scheme::XYZ,
+        Resource::LoadingMethod::All, util::MIME_TYPE_MVT);
     EXPECT_EQ(Resource::Kind::Tile, vectorTile.kind);
     EXPECT_EQ("http://example.com/12/3/1/2.mvt", vectorTile.url);
     EXPECT_EQ("http://example.com/{prefix}/{z}/{x}/{y}.mvt", vectorTile.tileData->urlTemplate);
@@ -38,6 +40,7 @@ TEST(Resource, Tile) {
     EXPECT_EQ(1, vectorTile.tileData->x);
     EXPECT_EQ(2, vectorTile.tileData->y);
     EXPECT_EQ(3, vectorTile.tileData->z);
+    EXPECT_EQ(util::MIME_TYPE_MVT, vectorTile.acceptHeader);
 
     Resource quadTile = Resource::tile("http://example.com/{quadkey}.png", 2.0, 0, 0, 1, Tileset::Scheme::XYZ);
     EXPECT_EQ(Resource::Kind::Tile, quadTile.kind);
@@ -103,6 +106,7 @@ TEST(Resource, Tile) {
     EXPECT_EQ(1, tmsTile.tileData->x);
     EXPECT_EQ(5, tmsTile.tileData->y);
     EXPECT_EQ(3, tmsTile.tileData->z);
+    EXPECT_TRUE(rasterTile.acceptHeader.empty());
 }
 
 TEST(Resource, Glyphs) {
