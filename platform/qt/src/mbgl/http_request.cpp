@@ -63,8 +63,8 @@ QNetworkRequest HTTPRequest::networkRequest() const {
     }
 
     if (!m_resource.acceptHeader.empty()) {
-        req.setRawHeader(
-            "Accept", QByteArray(m_resource.acceptHeader.data(), static_cast<int>(m_resource.acceptHeader.size())));
+        req.setRawHeader("Accept",
+                         QByteArray(m_resource.acceptHeader.data(), static_cast<int>(m_resource.acceptHeader.size())));
     }
 
     return req;

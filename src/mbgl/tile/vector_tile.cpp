@@ -14,13 +14,12 @@ VectorTile::VectorTile(const OverscaledTileID& id_,
                        const Tileset& tileset,
                        TileObserver* observer_)
     : GeometryTile(id_, std::move(sourceID_), parameters_, observer_),
-      loader(std::make_unique<TileLoader<VectorTile>>(*this,
-                                                      id_,
-                                                      parameters_,
-                                                      tileset,
-                                                      tileset.vectorEncoding == Tileset::VectorEncoding::MLT
-                                                          ? util::MIME_TYPE_MLT
-                                                          : util::MIME_TYPE_MVT)) {}
+      loader(std::make_unique<TileLoader<VectorTile>>(
+          *this,
+          id_,
+          parameters_,
+          tileset,
+          tileset.vectorEncoding == Tileset::VectorEncoding::MLT ? util::MIME_TYPE_MLT : util::MIME_TYPE_MVT)) {}
 
 VectorTile::~VectorTile() {}
 
