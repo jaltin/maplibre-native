@@ -953,7 +953,7 @@ expected<OfflineRegions, std::exception_ptr> OfflineDatabase::mergeDatabase(cons
         auto sideUserVersion = static_cast<int>(getPragma<int64_t>("PRAGMA side.user_version"));
         const auto mainUserVersion = getPragma<int64_t>("PRAGMA user_version");
         if (sideUserVersion < 6 || sideUserVersion > mainUserVersion) {
-            throw std::runtime_error(fmt::format("Merge database has incorrect user_version: {}", sideUserVersion));
+            throw std::runtime_error("Merge database has incorrect user_version");
         }
 
         // Migrate the sideloaded database to the current schema if needed.
