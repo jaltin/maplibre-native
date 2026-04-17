@@ -19,7 +19,10 @@ VectorTile::VectorTile(const OverscaledTileID& id_,
           id_,
           parameters_,
           tileset,
-          tileset.vectorEncoding == Tileset::VectorEncoding::MLT ? util::MIME_TYPE_MLT : util::MIME_TYPE_MVT)) {}
+          tileset.vectorEncoding.value_or(Tileset::VectorEncoding::Mapbox) == Tileset::VectorEncoding::MLT
+              ? util::MIME_TYPE_MLT
+              : util::MIME_TYPE_MVT,
+          tileset.vectorEncoding.value_or(Tileset::VectorEncoding::Mapbox))) {}
 
 VectorTile::~VectorTile() {}
 

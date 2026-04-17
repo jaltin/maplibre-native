@@ -19,7 +19,8 @@ TileLoader<T>::TileLoader(T& tile_,
                           const OverscaledTileID& id,
                           const TileParameters& parameters,
                           const Tileset& tileset,
-                          std::string_view acceptHeader)
+                          std::string_view acceptHeader,
+                          Tileset::VectorEncoding encoding)
     : tile(tile_),
       necessity(TileNecessity::Optional),
       resource(Resource::tile(tileset.tiles.at(0),
@@ -29,7 +30,8 @@ TileLoader<T>::TileLoader(T& tile_,
                               id.canonical.z,
                               tileset.scheme,
                               Resource::LoadingMethod::CacheOnly,
-                              acceptHeader)),
+                              acceptHeader,
+                              encoding)),
       fileSource(parameters.fileSource) {
     assert(!request);
 
