@@ -45,6 +45,7 @@ public:
         int32_t x;
         int32_t y;
         int8_t z;
+        Tileset::VectorEncoding encoding = Tileset::VectorEncoding::Mapbox;
     };
 
     enum class LoadingMethod : uint8_t {
@@ -82,7 +83,8 @@ public:
                          int8_t z,
                          Tileset::Scheme scheme,
                          LoadingMethod = LoadingMethod::All,
-                         std::string_view acceptHeader = {});
+                         std::string_view acceptHeader = {},
+                         Tileset::VectorEncoding encoding = Tileset::VectorEncoding::Mapbox);
     static Resource glyphs(const std::string& urlTemplate,
                            const FontStack& fontStack,
                            const std::pair<uint16_t, uint16_t>& glyphRange);

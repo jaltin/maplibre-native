@@ -37,7 +37,8 @@ TEST(Resource, Tile) {
                                          3,
                                          Tileset::Scheme::XYZ,
                                          Resource::LoadingMethod::All,
-                                         util::MIME_TYPE_MVT);
+                                         util::MIME_TYPE_MVT,
+                                         Tileset::VectorEncoding::Mapbox);
     EXPECT_EQ(Resource::Kind::Tile, vectorTile.kind);
     EXPECT_EQ("http://example.com/12/3/1/2.mvt", vectorTile.url);
     EXPECT_EQ("http://example.com/{prefix}/{z}/{x}/{y}.mvt", vectorTile.tileData->urlTemplate);
@@ -46,6 +47,20 @@ TEST(Resource, Tile) {
     EXPECT_EQ(2, vectorTile.tileData->y);
     EXPECT_EQ(3, vectorTile.tileData->z);
     EXPECT_EQ(util::MIME_TYPE_MVT, vectorTile.acceptHeader);
+    EXPECT_EQ(Tileset::VectorEncoding::Mapbox, vectorTile.tileData->encoding);
+
+    Resource mltTile = Resource::tile("http://example.com/{prefix}/{z}/{x}/{y}.mlt",
+                                      2.0,
+                                      1,
+                                      2,
+                                      3,
+                                      Tileset::Scheme::XYZ,
+                                      Resource::LoadingMethod::All,
+                                      util::MIME_TYPE_MLT,
+                                      Tileset::VectorEncoding::MLT);
+    EXPECT_EQ(Resource::Kind::Tile, mltTile.kind);
+    EXPECT_EQ(util::MIME_TYPE_MLT, mltTile.acceptHeader);
+    EXPECT_EQ(Tileset::VectorEncoding::MLT, mltTile.tileData->encoding);
 
     Resource quadTile = Resource::tile("http://example.com/{quadkey}.png", 2.0, 0, 0, 1, Tileset::Scheme::XYZ);
     EXPECT_EQ(Resource::Kind::Tile, quadTile.kind);
